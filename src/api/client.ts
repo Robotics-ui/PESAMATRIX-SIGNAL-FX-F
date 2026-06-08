@@ -1,35 +1,41 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://pesamatrix-signal-fx--pesamatrix20.replit.app/api';
 
-// Interceptor-mimicking base fetcher
+// ─── Core fetcher ────────────────────────────────────────────────────────────
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('pmatrix_access_token');
   const headers = new Headers(options.headers);
   if (token) headers.set('Authorization', `Bearer ${token}`);
   headers.set('Content-Type', 'application/json');
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-  
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+  } catch {
+    throw new Error('Network error — check your connection or the API server.');
+  }
+
   if (res.status === 401) {
     localStorage.removeItem('pmatrix_access_token');
     window.location.href = '/login';
-    throw new Error('Unauthorized');
+    throw new Error('Session expired. Please log in again.');
   }
-  
+
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || 'API Execution Failure');
+    throw new Error(errorData.message || errorData.error || `Request failed (${res.status})`);
   }
+
   return res.status !== 204 ? res.json() : null;
 }
 
-// Multipart upload fetcher with XHR for progress tracking
+// ─── Multipart upload with XHR progress ──────────────────────────────────────
 export async function apiUpload(
   endpoint: string,
   formData: FormData,
   onProgress?: (pct: number) => void
-): Promise<any> {
+): Promise<unknown> {
   const token = localStorage.getItem('pmatrix_access_token');
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -37,9 +43,7 @@ export async function apiUpload(
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
     xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable && onProgress) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
+      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
     });
 
     xhr.addEventListener('load', () => {
@@ -50,18 +54,11 @@ export async function apiUpload(
         return;
       }
       if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          resolve(xhr.status !== 204 ? JSON.parse(xhr.responseText) : null);
-        } catch {
-          resolve(null);
-        }
+        try { resolve(xhr.status !== 204 ? JSON.parse(xhr.responseText) : null); }
+        catch { resolve(null); }
       } else {
-        try {
-          const err = JSON.parse(xhr.responseText);
-          reject(new Error(err.message || 'Upload failed'));
-        } catch {
-          reject(new Error('Upload failed'));
-        }
+        try { reject(new Error(JSON.parse(xhr.responseText).message || 'Upload failed')); }
+        catch { reject(new Error(`Upload failed (${xhr.status})`)); }
       }
     });
 
@@ -75,39 +72,116 @@ export async function apiUpload(
 export const useAuthUser = () =>
   useQuery({ queryKey: ['auth-user'], queryFn: () => apiFetch('/auth/me'), retry: false });
 
+export const useLogin = () =>
+  useMutation({
+    mutationFn: (data: { email: string; password: string }) =>
+      apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+  });
+
+export const useRegister = () =>
+  useMutation({
+    mutationFn: (data: { name: string; email: string; password: string; phone?: string }) =>
+      apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  });
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 export const useGetDashboard = () =>
-  useQuery({ queryKey: ['dashboard-metrics'], queryFn: () => apiFetch('/dashboard/overview'), refetchInterval: 5000 });
+  useQuery({
+    queryKey: ['dashboard-metrics'],
+    queryFn: () => apiFetch('/dashboard/overview'),
+    refetchInterval: 5000,
+    retry: false,
+  });
 
 // ─── Providers ───────────────────────────────────────────────────────────────
 export const useGetProviders = () =>
-  useQuery({ queryKey: ['providers'], queryFn: () => apiFetch('/providers') });
+  useQuery({ queryKey: ['providers'], queryFn: () => apiFetch('/providers'), retry: false });
+
+export const useSubscribeProvider = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (providerId: string) =>
+      apiFetch(`/providers/${providerId}/subscribe`, { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['providers'] }),
+  });
+};
+
+export const useUnsubscribeProvider = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (providerId: string) =>
+      apiFetch(`/providers/${providerId}/unsubscribe`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['providers'] }),
+  });
+};
 
 // ─── MT5 Accounts ────────────────────────────────────────────────────────────
 export const useGetMT5Accounts = () =>
-  useQuery({ queryKey: ['mt5-accounts'], queryFn: () => apiFetch('/accounts') });
+  useQuery({ queryKey: ['mt5-accounts'], queryFn: () => apiFetch('/accounts'), retry: false });
 
 export const useConnectMT5 = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => apiFetch('/accounts/connect', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data: { login: string; password: string; server: string }) =>
+      apiFetch('/accounts/connect', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['mt5-accounts'] }),
+  });
+};
+
+export const useDisconnectMT5 = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (accountId: string) =>
+      apiFetch(`/accounts/${accountId}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['mt5-accounts'] }),
   });
 };
 
 // ─── Trades ──────────────────────────────────────────────────────────────────
 export const useGetTrades = () =>
-  useQuery({ queryKey: ['trades'], queryFn: () => apiFetch('/trades'), refetchInterval: 4000 });
+  useQuery({
+    queryKey: ['trades'],
+    queryFn: () => apiFetch('/trades'),
+    refetchInterval: 4000,
+    retry: false,
+  });
 
 // ─── Plans & Billing ─────────────────────────────────────────────────────────
 export const useGetPlans = () =>
-  useQuery({ queryKey: ['plans'], queryFn: () => apiFetch('/plans') });
+  useQuery({ queryKey: ['plans'], queryFn: () => apiFetch('/plans'), retry: false });
+
+export const useGetSubscription = () =>
+  useQuery({ queryKey: ['subscription'], queryFn: () => apiFetch('/billing/subscription'), retry: false });
 
 export const useMpesaPush = () =>
   useMutation({
     mutationFn: (data: { planId: string; phoneNumber: string }) =>
       apiFetch('/billing/mpesa/stk-push', { method: 'POST', body: JSON.stringify(data) }),
   });
+
+// ─── Admin ───────────────────────────────────────────────────────────────────
+export const useAdminGetUsers = () =>
+  useQuery({ queryKey: ['admin-users'], queryFn: () => apiFetch('/admin/users'), retry: false });
+
+export const useAdminGetStats = () =>
+  useQuery({ queryKey: ['admin-stats'], queryFn: () => apiFetch('/admin/stats'), refetchInterval: 10000, retry: false });
+
+export const useAdminUpdateUser = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      apiFetch(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+};
+
+export const useAdminDeleteUser = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/admin/users/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+};
 
 // ─── Media ───────────────────────────────────────────────────────────────────
 export interface MediaItem {
@@ -132,11 +206,7 @@ export interface MediaMetadataUpdate {
 }
 
 export const useGetMedia = () =>
-  useQuery<MediaItem[]>({
-    queryKey: ['media'],
-    queryFn: () => apiFetch('/media'),
-    retry: false,
-  });
+  useQuery<MediaItem[]>({ queryKey: ['media'], queryFn: () => apiFetch('/media'), retry: false });
 
 export const useDeleteMedia = () => {
   const qc = useQueryClient();
