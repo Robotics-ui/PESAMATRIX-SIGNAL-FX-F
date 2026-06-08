@@ -166,3 +166,31 @@ export default function Dashboard() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Risk Offsets (SL/TP)</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Yield Parameter</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Time Stamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-900/60">
+                  {displayMetrics.recentSignals.map((signal, idx) => (
+                    <tr key={idx} className="hover:bg-zinc-900/10 transition-colors">
+                      <td className="px-6 py-4 text-sm font-bold text-zinc-200">{signal.pair}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${signal.type === 'BUY' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                          {signal.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-mono text-zinc-300">{signal.value}</td>
+                      <td className="px-6 py-4 text-xs text-zinc-400">SL: {signal.sl} / TP: {signal.tp}</td>
+                      <td className="px-6 py-4 text-sm font-semibold">
+                        <span className={signal.isPositive ? 'text-emerald-400' : 'text-red-400'}>{signal.pips}</span>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-zinc-500">{signal.time}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}

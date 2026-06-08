@@ -37,15 +37,17 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
             if (!item.roles.includes(userRole)) return null;
             const isActive = location === item.path;
             return (
-              <Link key={item.path} href={item.path}>
-                <a className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                   isActive 
                     ? 'bg-purple-600/10 text-purple-400 border-l-2 border-purple-500 pl-3' 
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
-                }`}>
-                  <item.icon className="h-4 w-4" />
-                  {item.name}
-                </a>
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.name}
               </Link>
             );
           })}
