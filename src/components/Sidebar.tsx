@@ -1,5 +1,8 @@
 import { Link, useLocation } from 'wouter';
-import { LayoutDashboard, Users, CreditCard, History, Cpu, ShieldAlert, LogOut, Activity } from 'lucide-react';
+import {
+  LayoutDashboard, Users, CreditCard, History, Cpu,
+  ShieldAlert, LogOut, Activity, ImagePlay, Phone,
+} from 'lucide-react';
 
 interface SidebarProps {
   userRole?: 'user' | 'provider' | 'admin';
@@ -9,12 +12,14 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
   const [location] = useLocation();
 
   const menuItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['user', 'provider', 'admin'] },
-    { name: 'Providers', path: '/providers', icon: Users, roles: ['user', 'provider', 'admin'] },
-    { name: 'MT5 Accounts', path: '/accounts', icon: Cpu, roles: ['user', 'provider', 'admin'] },
-    { name: 'Trade Ledger', path: '/history', icon: History, roles: ['user', 'provider', 'admin'] },
-    { name: 'Subscriptions', path: '/billing', icon: CreditCard, roles: ['user', 'provider', 'admin'] },
-    { name: 'Admin Terminal', path: '/admin', icon: ShieldAlert, roles: ['admin'] },
+    { name: 'Dashboard',     path: '/',         icon: LayoutDashboard, roles: ['user', 'provider', 'admin'] },
+    { name: 'Providers',     path: '/providers', icon: Users,           roles: ['user', 'provider', 'admin'] },
+    { name: 'MT5 Accounts',  path: '/accounts',  icon: Cpu,             roles: ['user', 'provider', 'admin'] },
+    { name: 'Trade Ledger',  path: '/history',   icon: History,         roles: ['user', 'provider', 'admin'] },
+    { name: 'Subscriptions', path: '/billing',   icon: CreditCard,      roles: ['user', 'provider', 'admin'] },
+    { name: 'Media Library', path: '/media',     icon: ImagePlay,       roles: ['user', 'provider', 'admin'] },
+    { name: 'Contacts',      path: '/contacts',  icon: Phone,           roles: ['user', 'provider', 'admin'] },
+    { name: 'Admin Terminal',path: '/admin',     icon: ShieldAlert,     roles: ['admin'] },
   ];
 
   const handleLogout = () => {
@@ -25,6 +30,7 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
   return (
     <aside className="w-64 bg-zinc-950 border-r border-zinc-850 flex flex-col justify-between h-screen sticky top-0">
       <div className="p-6 flex flex-col gap-8">
+        {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="bg-purple-600 p-2 rounded-lg text-white">
             <Activity className="h-6 w-6 animate-pulse" />
@@ -32,6 +38,7 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
           <span className="font-bold text-xl tracking-wider text-white">PMATRIX</span>
         </div>
 
+        {/* Nav */}
         <nav className="flex flex-col gap-1.5">
           {menuItems.map((item) => {
             if (!item.roles.includes(userRole)) return null;
@@ -41,12 +48,12 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
                 key={item.path}
                 href={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  isActive 
-                    ? 'bg-purple-600/10 text-purple-400 border-l-2 border-purple-500 pl-3' 
+                  isActive
+                    ? 'bg-purple-600/10 text-purple-400 border-l-2 border-purple-500 pl-3'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                 }`}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4 shrink-0" />
                 {item.name}
               </Link>
             );
@@ -54,8 +61,9 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
         </nav>
       </div>
 
+      {/* Logout */}
       <div className="p-4 border-t border-zinc-900">
-        <button 
+        <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-zinc-400 hover:text-red-400 hover:bg-red-500/5 transition-colors cursor-pointer"
         >

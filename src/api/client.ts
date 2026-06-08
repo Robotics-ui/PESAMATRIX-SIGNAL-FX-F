@@ -12,7 +12,6 @@ async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
   
   if (res.status === 401) {
-    // Attempt token refresh logic or redirect
     localStorage.removeItem('pmatrix_access_token');
     window.location.href = '/login';
     throw new Error('Unauthorized');
@@ -25,25 +24,133 @@ async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return res.status !== 204 ? res.json() : null;
 }
 
-// Global API Hooks (Matching OpenAPI Backend Specifications)
-export const useAuthUser = () => useQuery({ queryKey: ['auth-user'], queryFn: () => apiFetch('/auth/me'), retry: false });
-export const useGetDashboard = () => useQuery({ queryKey: ['dashboard-metrics'], queryFn: () => apiFetch('/dashboard/overview'), refetchInterval: 5000 });
-export const useGetProviders = () => useQuery({ queryKey: ['providers'], queryFn: () => apiFetch('/providers') });
-export const useGetMT5Accounts = () => useQuery({ queryKey: ['mt5-accounts'], queryFn: () => apiFetch('/accounts') });
-export const useGetTrades = () => useQuery({ queryKey: ['trades'], queryFn: () => apiFetch('/trades'), refetchInterval: 4000 });
-export const useGetPlans = () => useQuery({ queryKey: ['plans'], queryFn: () => apiFetch('/plans') });
+// Multipart upload fetcher with XHR for progress tracking
+export async function apiUpload(
+  endpoint: string,
+  formData: FormData,
+  onProgress?: (pct: number) => void
+): Promise<any> {
+  const token = localStorage.getItem('pmatrix_access_token');
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}${endpoint}`);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-export const useMpesaPush = () => {
-  return useMutation({
-    mutationFn: (data: { planId: string; phoneNumber: string }) => 
-      apiFetch('/billing/mpesa/stk-push', { method: 'POST', body: JSON.stringify(data) })
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status === 401) {
+        localStorage.removeItem('pmatrix_access_token');
+        window.location.href = '/login';
+        reject(new Error('Unauthorized'));
+        return;
+      }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(xhr.status !== 204 ? JSON.parse(xhr.responseText) : null);
+        } catch {
+          resolve(null);
+        }
+      } else {
+        try {
+          const err = JSON.parse(xhr.responseText);
+          reject(new Error(err.message || 'Upload failed'));
+        } catch {
+          reject(new Error('Upload failed'));
+        }
+      }
+    });
+
+    xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+    xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+    xhr.send(formData);
   });
-};
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+export const useAuthUser = () =>
+  useQuery({ queryKey: ['auth-user'], queryFn: () => apiFetch('/auth/me'), retry: false });
+
+// ─── Dashboard ───────────────────────────────────────────────────────────────
+export const useGetDashboard = () =>
+  useQuery({ queryKey: ['dashboard-metrics'], queryFn: () => apiFetch('/dashboard/overview'), refetchInterval: 5000 });
+
+// ─── Providers ───────────────────────────────────────────────────────────────
+export const useGetProviders = () =>
+  useQuery({ queryKey: ['providers'], queryFn: () => apiFetch('/providers') });
+
+// ─── MT5 Accounts ────────────────────────────────────────────────────────────
+export const useGetMT5Accounts = () =>
+  useQuery({ queryKey: ['mt5-accounts'], queryFn: () => apiFetch('/accounts') });
 
 export const useConnectMT5 = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: any) => apiFetch('/accounts/connect', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['mt5-accounts'] })
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['mt5-accounts'] }),
+  });
+};
+
+// ─── Trades ──────────────────────────────────────────────────────────────────
+export const useGetTrades = () =>
+  useQuery({ queryKey: ['trades'], queryFn: () => apiFetch('/trades'), refetchInterval: 4000 });
+
+// ─── Plans & Billing ─────────────────────────────────────────────────────────
+export const useGetPlans = () =>
+  useQuery({ queryKey: ['plans'], queryFn: () => apiFetch('/plans') });
+
+export const useMpesaPush = () =>
+  useMutation({
+    mutationFn: (data: { planId: string; phoneNumber: string }) =>
+      apiFetch('/billing/mpesa/stk-push', { method: 'POST', body: JSON.stringify(data) }),
+  });
+
+// ─── Media ───────────────────────────────────────────────────────────────────
+export interface MediaItem {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  thumbnailUrl?: string;
+  title?: string;
+  description?: string;
+  uploadedBy?: string;
+  userId?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MediaMetadataUpdate {
+  title?: string;
+  description?: string;
+}
+
+export const useGetMedia = () =>
+  useQuery<MediaItem[]>({
+    queryKey: ['media'],
+    queryFn: () => apiFetch('/media'),
+    retry: false,
+  });
+
+export const useDeleteMedia = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/media/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['media'] }),
+  });
+};
+
+export const useUpdateMediaMetadata = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: MediaMetadataUpdate }) =>
+      apiFetch(`/media/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['media'] }),
   });
 };
