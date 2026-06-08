@@ -111,7 +111,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="divide-y divide-zinc-900/60">
-              {displayMetrics.liveOverview.map((item, idx) => (
+              {displayMetrics.liveOverview.map((item: { pair: string; value: string; change: string; active: boolean; status: string }, idx: number) => (
                 <div key={idx} className="p-4 flex items-center justify-between hover:bg-zinc-900/10 transition-colors">
                   <div>
                     <p className="font-bold text-sm text-zinc-200">{item.pair}</p>
@@ -169,7 +169,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-900/60">
-                  {displayMetrics.recentSignals.map((signal, idx) => (
+                  {displayMetrics.recentSignals.map((signal: { pair: string; type: string; value: string; time: string; sl: string; tp: string; pips: string; isPositive: boolean }, idx: number) => (
                     <tr key={idx} className="hover:bg-zinc-900/10 transition-colors">
                       <td className="px-6 py-4 text-sm font-bold text-zinc-200">{signal.pair}</td>
                       <td className="px-6 py-4">
