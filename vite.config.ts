@@ -25,6 +25,13 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5000,
     allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'https://pesamatrix-signal-fx--pesamatrix20.replit.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   preview: {
     host: '0.0.0.0',
