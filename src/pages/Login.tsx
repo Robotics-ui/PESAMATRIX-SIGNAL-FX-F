@@ -20,6 +20,7 @@ export default function Login() {
       const token = res?.access_token || res?.token || res?.accessToken;
       if (token) {
         localStorage.setItem('pmatrix_access_token', token);
+        if (res?.user) localStorage.setItem('pmatrix_user', JSON.stringify(res.user));
         navigate('/');
       } else {
         setError('Login succeeded but no token was returned. Contact support.');

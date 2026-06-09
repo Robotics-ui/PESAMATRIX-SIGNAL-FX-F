@@ -70,7 +70,21 @@ export async function apiUpload(
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const useAuthUser = () =>
-  useQuery({ queryKey: ['auth-user'], queryFn: () => apiFetch('/auth/me'), retry: false });
+  useQuery({
+    queryKey: ['auth-user'],
+    queryFn: async () => {
+      const res = await apiFetch('/auth/me');
+      const authUser = res?.user ?? res;
+      try {
+        const stored = localStorage.getItem('pmatrix_user');
+        const storedUser = stored ? JSON.parse(stored) : {};
+        return { ...storedUser, ...authUser };
+      } catch {
+        return authUser;
+      }
+    },
+    retry: false,
+  });
 
 export const useLogin = () =>
   useMutation({

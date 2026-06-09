@@ -24,16 +24,16 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-sm font-semibold text-zinc-100">{user?.name || 'Operator Context'}</p>
+            <p className="text-sm font-semibold text-zinc-100">{user?.fullName || user?.name || user?.email || 'Operator'}</p>
             <div className="flex items-center justify-end gap-1">
               <ShieldCheck className="h-3 w-3 text-purple-400" />
               <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
-                {user?.role || 'Guest'}
+                {user?.role || 'user'}
               </span>
             </div>
           </div>
           <div className="h-9 w-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-purple-400 text-sm">
-            {user?.name?.substring(0, 2).toUpperCase() || 'PM'}
+            {(user?.fullName || user?.name || user?.email || 'PM').substring(0, 2).toUpperCase()}
           </div>
         </div>
       </div>

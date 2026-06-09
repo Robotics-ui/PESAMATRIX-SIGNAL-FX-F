@@ -24,6 +24,7 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
 
   const handleLogout = () => {
     localStorage.removeItem('pmatrix_access_token');
+    localStorage.removeItem('pmatrix_user');
     window.location.href = '/login';
   };
 
