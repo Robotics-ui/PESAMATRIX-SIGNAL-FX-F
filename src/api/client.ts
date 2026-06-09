@@ -29,7 +29,12 @@ async function apiFetch(endpoint: string, options: RequestInit = {}) {
     throw new Error(errorData.message || errorData.error || `Request failed (${res.status})`);
   }
 
-  return res.status !== 204 ? res.json() : null;
+  if (res.status === 204) return null;
+  const data = await res.json();
+  if (data && typeof data === 'object' && data.error && !data.accessToken && !data.token && !data.access_token) {
+    throw new Error(data.error);
+  }
+  return data;
 }
 
 // ─── Multipart upload with XHR progress ──────────────────────────────────────
