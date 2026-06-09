@@ -8,19 +8,27 @@ export default function Register() {
   const [, navigate] = useLocation();
   const registerMutation = useRegister();
 
-  const [form, setForm] = React.useState({ name: '', email: '', password: '', phone: '' });
+  const [form, setForm] = React.useState({ fullName: '', email: '', password: '', confirmPassword: '', phoneNumber: '' });
   const [showPw, setShowPw] = React.useState(false);
+  const [showConfirmPw, setShowConfirmPw] = React.useState(false);
   const [error, setError] = React.useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     try {
       const res = await registerMutation.mutateAsync({
-        name: form.name,
+        fullName: form.fullName,
         email: form.email,
         password: form.password,
-        ...(form.phone ? { phone: form.phone } : {}),
+        confirmPassword: form.confirmPassword,
+        phoneNumber: form.phoneNumber,
       });
       const token = res?.access_token || res?.token || res?.accessToken;
       if (token) {
@@ -65,8 +73,8 @@ export default function Register() {
               <input
                 type="text"
                 required
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                value={form.fullName}
+                onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
                 placeholder="John Trader"
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-zinc-600 transition-colors"
               />
@@ -89,12 +97,13 @@ export default function Register() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-                Phone Number <span className="text-zinc-600 normal-case font-normal">(optional, for M-Pesa)</span>
+                Phone Number <span className="text-zinc-600 normal-case font-normal">(for M-Pesa)</span>
               </label>
               <input
                 type="tel"
-                value={form.phone}
-                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                required
+                value={form.phoneNumber}
+                onChange={e => setForm(f => ({ ...f, phoneNumber: e.target.value }))}
                 placeholder="+254712345678"
                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-zinc-600 transition-colors"
               />
@@ -108,11 +117,11 @@ export default function Register() {
                 <input
                   type={showPw ? 'text' : 'password'}
                   required
-                  minLength={8}
+                  minLength={6}
                   autoComplete="new-password"
                   value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="Min. 8 characters"
+                  placeholder="Min. 6 characters"
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 pr-10 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-zinc-600 transition-colors"
                 />
                 <button
@@ -121,6 +130,31 @@ export default function Register() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPw ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={form.confirmPassword}
+                  onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                  placeholder="Re-enter your password"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 pr-10 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder:text-zinc-600 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPw(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>

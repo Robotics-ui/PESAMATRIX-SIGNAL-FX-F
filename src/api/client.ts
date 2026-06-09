@@ -80,7 +80,7 @@ export const useLogin = () =>
 
 export const useRegister = () =>
   useMutation({
-    mutationFn: (data: { name: string; email: string; password: string; phone?: string }) =>
+    mutationFn: (data: { fullName: string; email: string; password: string; phoneNumber: string; confirmPassword: string }) =>
       apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   });
 
