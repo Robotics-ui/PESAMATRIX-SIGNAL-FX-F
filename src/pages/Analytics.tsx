@@ -27,7 +27,7 @@ interface AnalyticsData {
   currency?: string;
 }
 
-function BarChart({ data, valueKey, color }: { data: Array<Record<string, unknown>>; valueKey: string; color: string }) {
+function BarChart({ data, valueKey, color }: { data: Array<{ date?: string; count?: number; amount?: number; [k: string]: unknown }>; valueKey: string; color: string }) {
   if (!data?.length) return <div className="flex items-center justify-center h-full text-xs text-zinc-600">No data</div>;
   const values = data.map(d => Number(d[valueKey]) || 0);
   const max = Math.max(...values, 1);
@@ -42,7 +42,7 @@ function BarChart({ data, valueKey, color }: { data: Array<Record<string, unknow
               style={{ height: `${Math.max(pct, 2)}%` }}
             />
             <div className="absolute bottom-full mb-1 hidden group-hover:flex bg-zinc-800 border border-zinc-700 text-[10px] text-zinc-200 px-2 py-1 rounded whitespace-nowrap z-10">
-              {String(d.date || d.label || i)}: {values[i].toLocaleString()}
+              {String(d.date || i)}: {values[i].toLocaleString()}
             </div>
           </div>
         );
@@ -51,7 +51,7 @@ function BarChart({ data, valueKey, color }: { data: Array<Record<string, unknow
   );
 }
 
-function LineChart({ data, valueKey }: { data: Array<Record<string, unknown>>; valueKey: string }) {
+function LineChart({ data, valueKey }: { data: Array<{ date?: string; amount?: number; count?: number; [k: string]: unknown }>; valueKey: string }) {
   if (!data?.length) return <div className="flex items-center justify-center h-full text-xs text-zinc-600">No data</div>;
   const values = data.map(d => Number(d[valueKey]) || 0);
   const max = Math.max(...values, 1);
@@ -109,8 +109,8 @@ export default function Analytics() {
   const { data, isLoading, isError, refetch } = useAdminAnalytics();
   const a: AnalyticsData = data || {};
   const currency = a.currency || 'KES';
-  const revenueData: Array<Record<string, unknown>> = Array.isArray(a.revenue) ? a.revenue : [];
-  const growthData: Array<Record<string, unknown>> = Array.isArray(a.subscriberGrowthData) ? a.subscriberGrowthData : [];
+  const revenueData: RevenuePoint[] = Array.isArray(a.revenue) ? a.revenue : [];
+  const growthData: GrowthPoint[] = Array.isArray(a.subscriberGrowthData) ? a.subscriberGrowthData : [];
   const successRate = a.successRate ?? (a.totalCopiedTrades ? Math.round(((a.successfulTrades || 0) / a.totalCopiedTrades) * 100) : null);
   const failureRate = successRate != null ? 100 - successRate : null;
 
@@ -197,7 +197,7 @@ export default function Analytics() {
                 <CardContent>
                   {revenueData.length > 0 ? (
                     <div className="h-36">
-                      <LineChart data={revenueData} valueKey="amount" />
+                      <LineChart data={revenueData as never[]} valueKey="amount" />
                     </div>
                   ) : (
                     <div className="h-36 flex items-end gap-1">
@@ -224,7 +224,7 @@ export default function Analytics() {
                 <CardContent>
                   <div className="h-36">
                     {growthData.length > 0 ? (
-                      <BarChart data={growthData} valueKey="count" color="bg-blue-500/60 hover:bg-blue-500/80" />
+                      <BarChart data={growthData as never[]} valueKey="count" color="bg-blue-500/60 hover:bg-blue-500/80" />
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <p className="text-xs text-zinc-600">No growth data available</p>
