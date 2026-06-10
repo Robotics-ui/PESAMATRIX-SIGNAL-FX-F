@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-const NEW_BACKEND = 'https://pesamatrix-backend--philipcraig11.replit.app/api';
-const API_BASE = import.meta.env.PROD ? NEW_BACKEND : '/api';
+const API_BASE = '/api';
 
 // ─── Core fetcher ────────────────────────────────────────────────────────────
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
