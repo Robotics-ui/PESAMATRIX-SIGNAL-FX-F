@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'wouter';
 import {
   LayoutDashboard, Users, CreditCard, History, Cpu,
-  ShieldAlert, LogOut, Activity, ImagePlay, Phone,
+  ShieldAlert, LogOut, Activity, ImagePlay, Phone, KeyRound,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -62,8 +62,15 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-zinc-900 shrink-0">
+      {/* Bottom actions */}
+      <div className="p-4 border-t border-zinc-900 shrink-0 flex flex-col gap-1">
+        <Link
+          href="/change-password"
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 transition-colors"
+        >
+          <KeyRound className="h-4 w-4" />
+          Change Password
+        </Link>
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-zinc-400 hover:text-red-400 hover:bg-red-500/5 transition-colors cursor-pointer"

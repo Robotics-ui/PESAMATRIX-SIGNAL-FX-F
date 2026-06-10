@@ -21,7 +21,11 @@ export default function Login() {
       if (token) {
         localStorage.setItem('pmatrix_access_token', token);
         if (res?.user) localStorage.setItem('pmatrix_user', JSON.stringify(res.user));
-        navigate('/');
+        if (res?.user?.active === false) {
+          navigate('/change-password');
+        } else {
+          navigate('/');
+        }
       } else {
         setError('Login succeeded but no token was returned. Contact support.');
       }

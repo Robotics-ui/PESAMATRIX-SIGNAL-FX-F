@@ -1,6 +1,7 @@
 import { Route, Switch } from 'wouter';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import Providers from './pages/Providers';
 import Billing from './pages/Billing';
@@ -14,6 +15,7 @@ export default function App() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/change-password" component={ChangePassword} />
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/providers" component={Providers} />

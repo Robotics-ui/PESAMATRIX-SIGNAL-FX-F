@@ -104,6 +104,12 @@ export const useRegister = () =>
       apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   });
 
+export const useChangePassword = () =>
+  useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+      apiFetch('/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
+  });
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 export const useGetDashboard = () =>
   useQuery({
