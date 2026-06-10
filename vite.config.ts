@@ -27,7 +27,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'https://pesamatrix-signal-fx--pesamatrix20.replit.app',
+        target: 'https://pesamatrix-backend--philipcraig11.replit.app',
         changeOrigin: true,
         secure: true,
       },

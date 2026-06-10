@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const API_BASE = import.meta.env.PROD
-  ? (import.meta.env.VITE_API_URL || 'https://pesamatrix-signal-fx--pesamatrix20.replit.app/api')
+  ? (import.meta.env.VITE_API_URL || 'https://pesamatrix-backend--philipcraig11.replit.app/api')
   : '/api';
 
 // ─── Core fetcher ────────────────────────────────────────────────────────────
@@ -80,14 +80,13 @@ export const useAuthUser = () =>
   useQuery({
     queryKey: ['auth-user'],
     queryFn: async () => {
-      const res = await apiFetch('/auth/me');
-      const authUser = res?.user ?? res;
+      const token = localStorage.getItem('pmatrix_access_token');
+      if (!token) return null;
       try {
         const stored = localStorage.getItem('pmatrix_user');
-        const storedUser = stored ? JSON.parse(stored) : {};
-        return { ...storedUser, ...authUser };
+        return stored ? JSON.parse(stored) : { token };
       } catch {
-        return authUser;
+        return { token };
       }
     },
     retry: false,
