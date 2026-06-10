@@ -209,6 +209,91 @@ export const useAdminDeleteUser = () => {
   });
 };
 
+// ─── Copy Trading ────────────────────────────────────────────────────────────
+export const useCopyTradingStatus = () =>
+  useQuery({
+    queryKey: ['copy-trading-status'],
+    queryFn: () => apiFetch('/copy-trading/status'),
+    refetchInterval: 10000,
+    retry: false,
+  });
+
+// ─── Subscription Config (Admin) ─────────────────────────────────────────────
+export const useAdminSubscriptionConfig = () =>
+  useQuery({
+    queryKey: ['admin-subscription-config'],
+    queryFn: () => apiFetch('/admin/subscription-config'),
+    retry: false,
+  });
+
+export const useUpdateSubscriptionConfig = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { pricePerDay?: number; minDays?: number; maxDays?: number; currency?: string }) =>
+      apiFetch('/admin/subscription-config', { method: 'PATCH', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-subscription-config'] }),
+  });
+};
+
+// ─── Subscribers (Admin) ─────────────────────────────────────────────────────
+export const useAdminSubscribers = () =>
+  useQuery({
+    queryKey: ['admin-subscribers'],
+    queryFn: () => apiFetch('/admin/subscribers'),
+    refetchInterval: 15000,
+    retry: false,
+  });
+
+// ─── Analytics (Admin) ───────────────────────────────────────────────────────
+export const useAdminAnalytics = () =>
+  useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: () => apiFetch('/admin/analytics'),
+    refetchInterval: 30000,
+    retry: false,
+  });
+
+// ─── Master Accounts (Admin) ──────────────────────────────────────────────────
+export const useAdminMasterAccounts = () =>
+  useQuery({
+    queryKey: ['admin-master-accounts'],
+    queryFn: () => apiFetch('/admin/master-accounts'),
+    retry: false,
+  });
+
+export const useAdminCreateMasterAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { login: string; server: string; label?: string }) =>
+      apiFetch('/admin/master-accounts', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-master-accounts'] }),
+  });
+};
+
+export const useAdminDeleteMasterAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/admin/master-accounts/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-master-accounts'] }),
+  });
+};
+
+// ─── M-Pesa Trading Days STK Push ────────────────────────────────────────────
+export const useMpesaPushTradingDays = () =>
+  useMutation({
+    mutationFn: (data: { tradingDays: number; phoneNumber: string }) =>
+      apiFetch('/billing/mpesa/stk-push', { method: 'POST', body: JSON.stringify(data) }),
+  });
+
+export const usePaymentStatus = (checkoutRequestId: string | null) =>
+  useQuery({
+    queryKey: ['payment-status', checkoutRequestId],
+    queryFn: () => apiFetch(`/billing/payment-status/${checkoutRequestId}`),
+    enabled: !!checkoutRequestId,
+    refetchInterval: 3000,
+    retry: false,
+  });
+
 // ─── Media ───────────────────────────────────────────────────────────────────
 export interface MediaItem {
   id: string;

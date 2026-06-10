@@ -1,0 +1,116 @@
+PesaMatrix Frontend Upgrade Requirements
+
+Important:
+
+- Upgrade the existing frontend.
+- Do NOT remove or break current functionality.
+- Preserve existing authentication and dashboard features.
+
+1. Admin First Login Flow
+
+Implement:
+
+Admin Email:
+craigphilip761@gmail.com
+
+Requirements:
+
+- Detect forcePasswordChange flag.
+- Redirect to Change Password page after first login.
+- Block dashboard access until password is updated.
+
+2. Subscription Purchase UI
+
+Create subscription purchase interface.
+
+Requirements:
+
+- Slider component for trading days.
+- Admin-configured minimum and maximum limits.
+- Display:
+  - Selected trading days
+  - Cost per trading day
+  - Total amount
+  - Subscription expiry date
+
+3. Trading Day Calculations
+
+Requirements:
+
+- Count Monday to Friday only.
+- Exclude weekends from subscription calculations.
+- Display:
+  - Remaining trading days
+  - Expiry date
+  - Subscription status
+
+4. M-Pesa Payment Experience
+
+Implement:
+
+- Phone number input
+- STK Push initiation
+- Payment status polling
+- Success screen
+- Failure screen
+- Pending payment screen
+
+Display transaction reference and payment status.
+
+5. Copy Trading Dashboard
+
+Create subscriber dashboard showing:
+
+- Subscription status
+- Active master account
+- MT5 account status
+- Connected slave account
+- Copy trading status
+- Account synchronization status
+
+6. Admin Dashboard
+
+Add pages for:
+
+- Subscription pricing management
+- Minimum trading days
+- Maximum trading days
+- Active subscribers
+- Expired subscribers
+- Revenue analytics
+- Master account management
+
+7. Analytics Dashboard
+
+Display:
+
+- Revenue charts
+- Subscriber growth
+- Active subscriptions
+- Expired subscriptions
+- Trade copy statistics
+- Success/failure rates
+
+8. Production UX
+
+Requirements:
+
+- Mobile responsive
+- Dark theme
+- Loading states
+- Error handling
+- Empty states
+- Real-time status refresh
+
+9. API Integration
+
+Connect frontend to backend APIs for:
+
+- Authentication
+- Subscription management
+- M-Pesa payments
+- Analytics
+- Copy trading status
+- Admin controls
+
+Preserve existing UI functionality and extend the system without breaking current workflows.

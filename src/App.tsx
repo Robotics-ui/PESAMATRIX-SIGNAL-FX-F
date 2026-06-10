@@ -9,6 +9,8 @@ import TradeHistory from './pages/TradeHistory';
 import MediaLibrary from './pages/MediaLibrary';
 import AdminPanel from './pages/AdminPanel';
 import Contacts from './pages/Contacts';
+import CopyTrading from './pages/CopyTrading';
+import Analytics from './pages/Analytics';
 
 export default function App() {
   return (
@@ -18,9 +20,11 @@ export default function App() {
       <Route path="/change-password" component={ChangePassword} />
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/copy-trading" component={CopyTrading} />
       <Route path="/providers" component={Providers} />
       <Route path="/billing" component={Billing} />
       <Route path="/history" component={TradeHistory} />
+      <Route path="/analytics" component={Analytics} />
       <Route path="/media" component={MediaLibrary} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/contacts" component={Contacts} />

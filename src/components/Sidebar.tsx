@@ -2,6 +2,7 @@ import { Link, useLocation } from 'wouter';
 import {
   LayoutDashboard, Users, CreditCard, History, Cpu,
   ShieldAlert, LogOut, Activity, ImagePlay, Phone, KeyRound,
+  Copy, BarChart2,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -12,14 +13,16 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
   const [location] = useLocation();
 
   const menuItems = [
-    { name: 'Dashboard',      path: '/',          icon: LayoutDashboard, roles: ['user', 'provider', 'admin'] },
-    { name: 'Providers',      path: '/providers', icon: Users,           roles: ['user', 'provider', 'admin'] },
-    { name: 'MT5 Accounts',   path: '/accounts',  icon: Cpu,             roles: ['user', 'provider', 'admin'] },
-    { name: 'Trade Ledger',   path: '/history',   icon: History,         roles: ['user', 'provider', 'admin'] },
-    { name: 'Subscriptions',  path: '/billing',   icon: CreditCard,      roles: ['user', 'provider', 'admin'] },
-    { name: 'Media Library',  path: '/media',     icon: ImagePlay,       roles: ['user', 'provider', 'admin'] },
-    { name: 'Contacts',       path: '/contacts',  icon: Phone,           roles: ['user', 'provider', 'admin'] },
-    { name: 'Admin Terminal', path: '/admin',     icon: ShieldAlert,     roles: ['admin'] },
+    { name: 'Dashboard',      path: '/',              icon: LayoutDashboard, roles: ['user', 'provider', 'admin'] },
+    { name: 'Copy Trading',   path: '/copy-trading',  icon: Copy,            roles: ['user', 'provider', 'admin'] },
+    { name: 'Providers',      path: '/providers',     icon: Users,           roles: ['user', 'provider', 'admin'] },
+    { name: 'MT5 Accounts',   path: '/accounts',      icon: Cpu,             roles: ['user', 'provider', 'admin'] },
+    { name: 'Trade Ledger',   path: '/history',       icon: History,         roles: ['user', 'provider', 'admin'] },
+    { name: 'Subscriptions',  path: '/billing',       icon: CreditCard,      roles: ['user', 'provider', 'admin'] },
+    { name: 'Analytics',      path: '/analytics',     icon: BarChart2,       roles: ['user', 'provider', 'admin'] },
+    { name: 'Media Library',  path: '/media',         icon: ImagePlay,       roles: ['user', 'provider', 'admin'] },
+    { name: 'Contacts',       path: '/contacts',      icon: Phone,           roles: ['user', 'provider', 'admin'] },
+    { name: 'Admin Terminal', path: '/admin',         icon: ShieldAlert,     roles: ['admin'] },
   ];
 
   const handleLogout = () => {
@@ -48,6 +51,7 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
               <Link
                 key={item.path}
                 href={item.path}
+                data-testid={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-purple-600/10 text-purple-400 border-l-2 border-purple-500 pl-3'
@@ -66,6 +70,7 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
       <div className="p-4 border-t border-zinc-900 shrink-0 flex flex-col gap-1">
         <Link
           href="/change-password"
+          data-testid="nav-change-password"
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 transition-colors"
         >
           <KeyRound className="h-4 w-4" />
@@ -73,6 +78,7 @@ export default function Sidebar({ userRole = 'user' }: SidebarProps) {
         </Link>
         <button
           onClick={handleLogout}
+          data-testid="button-logout"
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-zinc-400 hover:text-red-400 hover:bg-red-500/5 transition-colors cursor-pointer"
         >
           <LogOut className="h-4 w-4" />

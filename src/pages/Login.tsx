@@ -21,7 +21,11 @@ export default function Login() {
       if (token) {
         localStorage.setItem('pmatrix_access_token', token);
         if (res?.user) localStorage.setItem('pmatrix_user', JSON.stringify(res.user));
-        if (res?.user?.active === false) {
+        const needsPasswordChange =
+          res?.user?.forcePasswordChange === true ||
+          res?.user?.force_password_change === true ||
+          res?.user?.active === false;
+        if (needsPasswordChange) {
           navigate('/change-password');
         } else {
           navigate('/');

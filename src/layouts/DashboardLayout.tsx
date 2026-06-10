@@ -9,9 +9,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [, navigate] = useLocation();
 
   React.useEffect(() => {
-    if (!isLoading && (isError || !user)) {
+    if (!isLoading) {
       const token = localStorage.getItem('pmatrix_access_token');
-      if (!token) navigate('/login');
+      if (!token || isError || !user) {
+        navigate('/login');
+        return;
+      }
+      try {
+        const stored = JSON.parse(localStorage.getItem('pmatrix_user') || '{}');
+        const needsPasswordChange =
+          stored?.forcePasswordChange === true ||
+          stored?.force_password_change === true ||
+          stored?.active === false;
+        if (needsPasswordChange) navigate('/change-password');
+      } catch { /* ignore parse errors */ }
     }
   }, [isLoading, isError, user, navigate]);
 
